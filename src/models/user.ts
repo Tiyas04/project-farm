@@ -5,15 +5,16 @@ import jwt from "jsonwebtoken";
 export interface User extends Document {
     name: string
     email: string
-    institution: string
     password: string
     phoneno: string
     role: string
+    fssaino?: string
+    fssaiicense?: string
+    kishancreditcard?: string
+    govtid?: string
     orders: mongoose.Schema.Types.ObjectId[]
     refreshToken?: string
     lastLogin?: Date
-    otp?: string
-    otpExpiry?: Date
     comparePassword(password: string): Promise<boolean>
     generateAccessToken(): Promise<string>
     generateRefreshToken(): Promise<string>
@@ -34,12 +35,6 @@ const UserSchema: Schema<User> = new Schema(
             lowercase: true,
             trim: true
         },
-        institution: {
-            type: String,
-            required: true,
-            index: true,
-            trim: true
-        },
         password: {
             type: String,
             required: true
@@ -56,6 +51,22 @@ const UserSchema: Schema<User> = new Schema(
             enum: ["user", "seller", "admin"],
             default: "user"
         },
+        fssaino: {
+            type: String,
+            trim: true
+        },
+        fssaiicense: {
+            type: String,
+            trim: true
+        },
+        kishancreditcard: {
+            type: String,
+            trim: true
+        },
+        govtid: {
+            type: String,
+            trim: true
+        },
         orders: [{
             type: Schema.Types.ObjectId,
             ref: "Order"
@@ -64,12 +75,6 @@ const UserSchema: Schema<User> = new Schema(
             type: String
         },
         lastLogin: {
-            type: Date
-        },
-        otp: {
-            type: String
-        },
-        otpExpiry: {
             type: Date
         }
     },

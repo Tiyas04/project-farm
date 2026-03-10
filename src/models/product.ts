@@ -2,17 +2,12 @@ import mongoose, { Document, Schema } from "mongoose"
 
 export interface Product extends Document {
     name: string;
-    formula: string;
-    casNumber: string;
-    category: string;
+    category: string[];
     price: number;
-    mfcdNo: string;
+    fssaino: string;
     image: string;
     description: string;
-    purity: string;
     unit: string;
-    molecularWeight: number;
-    hazards: string[];
     inStock: boolean;
     stockLevel: number;
     seller: mongoose.Types.ObjectId;
@@ -26,32 +21,21 @@ const ProductSchema: Schema<Product> = new Schema(
             index: true,
             trim: true
         },
-        formula: {
+        category: [{
             type: String,
             required: true,
             index: true,
             trim: true
-        },
-        casNumber: {
-            type: String,
-            required: true,
-            unique: true,
-            index: true,
-            trim: true
-        },
-        category: {
-            type: String,
-            required: true,
-            index: true,
-            trim: true
-        },
+        }],
         price: {
             type: Number,
             required: true
         },
-        mfcdNo: {
+        fssaino: {
             type: String,
-            required: true
+            required: true,
+            index: true,
+            trim: true
         },
         image: {
             type: String,
@@ -62,26 +46,12 @@ const ProductSchema: Schema<Product> = new Schema(
             required: true,
             trim: true
         },
-        purity: {
-            type: String,
-            required: true,
-            trim: true
-        },
         unit: {
             type: String,
             required: true,
             enum: ["mg", "ml", "g", "kg", "l"],
             default: "mg"
         },
-        molecularWeight: {
-            type: Number,
-            required: true,
-            index: true
-        },
-        hazards: [{
-            type: String,
-            default: []
-        }],
         inStock: {
             type: Boolean,
             required: true
