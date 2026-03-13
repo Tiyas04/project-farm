@@ -1,0 +1,41 @@
+"use client"
+
+export default function Hero() {
+    return (
+        <section className="relative h-[80vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+            {/* Background Image - using a stock photo of a wheat field similar to the user's design */}
+            <div 
+                className="absolute inset-0 bg-cover bg-center z-0"
+                style={{ 
+                    backgroundImage: "url('https://www.shutterstock.com/image-photo/farmer-walks-through-vibrant-cornfield-260nw-2676016547.jpg')",
+                    filter: "brightness(0.9)"
+                }}
+            ></div>
+            
+            {/* Overlays to match the warm/dark tone of the original image */}
+            <div className="absolute inset-0 bg-black/20 z-10"></div>
+            <div className="absolute inset-0 bg-linear-to-t from-green-900/40 via-transparent to-transparent z-10"></div>
+
+            {/* Left/Right Arrow Buttons (Absolute) */}
+            <button className="absolute left-4 md:left-8 z-30 w-10 h-10 items-center justify-center bg-green-900/90 hover:bg-green-800 transition-colors text-white hidden md:flex cursor-pointer" aria-label="Previous slide">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <button className="absolute right-4 md:right-8 z-30 w-10 h-10 items-center justify-center bg-green-900/90 hover:bg-green-800 transition-colors text-white hidden md:flex cursor-pointer" aria-label="Next slide">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+
+            {/* Content */}
+            <div className="relative z-20 text-center px-6 max-w-4xl mx-auto flex flex-col items-center">
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-wide drop-shadow-md uppercase">
+                    Farming Products
+                </h1>
+                <p className="text-sm md:text-base text-gray-50 mb-8 max-w-2xl mx-auto font-medium drop-shadow-sm leading-relaxed">
+                    Eco friendly products are "products that do not harm the environment whether in their production, use or disposal". In other words, these products help preserve the environment by significantly reducing the pollution they could produce.
+                </p>
+                <button className="px-6 py-3 bg-white hover:bg-gray-100 text-green-900 font-bold text-sm tracking-widest uppercase transition-colors shadow-lg">
+                    Explore Products
+                </button>
+            </div>
+        </section>
+    );
+}
