@@ -5,20 +5,11 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import Link from "next/link";
 import { use } from "react";
-
-// Using the same mock data for demo purposes since we don't have a DB connected yet
-const MOCK_PRODUCTS = [
-    { id: 1, name: "Organic Fertilizer", category: "Fertilizers", description: "Rich in nutrients for healthy plant growth.", longDescription: "Our premium organic fertilizer is carefully balanced to provide your crops with everything they need for explosive, healthy growth. Derived from natural sources, it improves soil structure while feeding your plants.", price: 25.99, features: ["100% Organic", "Slow-release formula", "Improves soil health", "Safe for all edibles"] },
-    { id: 2, name: "Neem Oil Pesticide", category: "Pesticides", description: "Natural protection against common garden pests.", longDescription: "Protect your harvest naturally with our cold-pressed neem oil. It acts as an insecticide, miticide, and fungicide all in one, while remaining safe for beneficial insects like bees and ladybugs.", price: 15.49, features: ["Cold-pressed", "OMRI listed", "Broad-spectrum control", "Leaves no harmful residue"] },
-    { id: 3, name: "Tomato Seeds", category: "Seeds", description: "High-yield, disease-resistant tomato seeds.", longDescription: "These indeterminate heirloom seeds have been selected for heavy yields and excellent disease resistance. Expect large, flavorful, deep-red slicing tomatoes perfect for fresh eating or canning.", price: 4.99, features: ["Heirloom variety", "Indeterminate growth", "High germination rate", "Non-GMO"] },
-    { id: 4, name: "Drip Irrigation Kit", category: "Equipment", description: "Water-saving irrigation system for your farm.", longDescription: "Conserve water and target your plants' root zones directly. This comprehensive kit includes everything you need to set up a professional-grade drip system for raised beds or row crops.", price: 89.99, features: ["Saves up to 70% water", "Easy snap-on fittings", "UV-resistant tubing", "Includes timer"] },
-    { id: 5, name: "Compost Bin", category: "Equipment", description: "Large capacity bin for organic waste composting.", longDescription: "Turn your farm and kitchen waste into black gold. This durable, dual-chamber tumbling composter speeds up the decomposition process, yielding rich compost in mere weeks.", price: 45.00, features: ["Dual-chamber design", "Tumbling mechanism", "Aeration holes", "Pest-resistant"] },
-    { id: 6, name: "NPK 19-19-19", category: "Fertilizers", description: "Balanced fertilizer for all-around plant health.", longDescription: "A perfectly balanced 19-19-19 water-soluble fertilizer designed for rapid greening and robust flower/fruit development. Ideal for greenhouse and field crops alike.", price: 30.00, features: ["Water-soluble", "Fast-acting", "Micronutrients included", "Won't burn roots"] },
-    { id: 7, name: "Carrot Seeds", category: "Seeds", description: "Crisp and sweet carrot variety for easy growing.", longDescription: "Our Nantes variety carrot seeds produce cylindrical, nearly coreless carrots that are exceptionally sweet and crisp. They perform well even in heavier soils.", price: 3.99, features: ["Nantes variety", "Fast maturing (65 days)", "High vitamin A", "Stores well"] },
-    { id: 8, name: "Fungicide Spray", category: "Pesticides", description: "Effective control of fungal diseases on crops.", longDescription: "A systemic copper-based fungicide that provides long-lasting preventative control against powdery mildew, blight, rust, and other common agricultural fungal infections.", price: 18.50, features: ["Copper-based", "Rain-fast after 2 hours", "Preventative action", "Concentrated formula"] },
-];
+import { useCart } from "@/context/CartContext";
+import { MOCK_PRODUCTS } from "@/lib/products";
 
 export default function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+    const { addToCart } = useCart();
     const { slug } = use(params);
     const productId = parseInt(slug);
     const product = MOCK_PRODUCTS.find(p => p.id === productId) || MOCK_PRODUCTS[0];
@@ -42,10 +33,15 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-12">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
                         {/* Product Image section */}
-                        <div className="bg-gray-100 flex items-center justify-center p-12 min-h-[400px]">
-                            <svg className="w-32 h-32 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
+                        <div className="bg-gray-100 flex items-center justify-center p-12 min-h-[400px] overflow-hidden">
+                            {product.image ? (
+                                /* eslint-disable-next-line @next/next/no-img-element */
+                                <img src={product.image} alt={product.name} className="w-full h-full object-cover object-center rounded-xl shadow-sm" />
+                            ) : (
+                                <svg className="w-32 h-32 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            )}
                         </div>
 
                         {/* Product Details Section */}
@@ -92,7 +88,10 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                                         >+</button>
                                     </div>
                                 </div>
-                                <button className="flex-1 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-md flex justify-center items-center">
+                                <button 
+                                    onClick={() => addToCart({ ...product, id: String(product.id), quantity })}
+                                    className="flex-1 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-md flex justify-center items-center cursor-pointer"
+                                >
                                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                                     Add to Cart
                                 </button>

@@ -4,21 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
-
-const MOCK_PRODUCTS = [
-    { id: 1, name: "Organic Fertilizer", category: "Fertilizers", description: "Rich in nutrients for healthy plant growth.", price: 25.99 },
-    { id: 2, name: "Neem Oil Pesticide", category: "Pesticides", description: "Natural protection against common garden pests.", price: 15.49 },
-    { id: 3, name: "Tomato Seeds", category: "Seeds", description: "High-yield, disease-resistant tomato seeds.", price: 4.99 },
-    { id: 4, name: "Drip Irrigation Kit", category: "Equipment", description: "Water-saving irrigation system for your farm.", price: 89.99 },
-    { id: 5, name: "Compost Bin", category: "Equipment", description: "Large capacity bin for organic waste composting.", price: 45.00 },
-    { id: 6, name: "NPK 19-19-19", category: "Fertilizers", description: "Balanced fertilizer for all-around plant health.", price: 30.00 },
-    { id: 7, name: "Carrot Seeds", category: "Seeds", description: "Crisp and sweet carrot variety for easy growing.", price: 3.99 },
-    { id: 8, name: "Fungicide Spray", category: "Pesticides", description: "Effective control of fungal diseases on crops.", price: 18.50 },
-];
+import { useCart } from "@/context/CartContext";
+import { MOCK_PRODUCTS } from "@/lib/products";
 
 const CATEGORIES = ["All", "Fertilizers", "Pesticides", "Seeds", "Equipment"];
 
 export default function ProductsPage() {
+    const { addToCart } = useCart();
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
 
@@ -79,8 +71,13 @@ export default function ProductsPage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             {filteredProducts.map((product) => (
                                 <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col">
-                                    <div className="h-48 bg-gray-100 flex items-center justify-center">
-                                        <span className="text-green-800 font-medium tracking-wider text-sm">{product.category.toUpperCase()}</span>
+                                    <div className="h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
+                                        {product.image ? (
+                                            /* eslint-disable-next-line @next/next/no-img-element */
+                                            <img src={product.image} alt={product.name} className="w-full h-full object-cover object-center" />
+                                        ) : (
+                                            <span className="text-green-800 font-medium tracking-wider text-sm">{product.category.toUpperCase()}</span>
+                                        )}
                                     </div>
                                     <div className="p-4 flex flex-col grow">
                                         <Link href={`/products/${product.id}`} className="hover:text-green-700 transition-colors">
@@ -89,7 +86,10 @@ export default function ProductsPage() {
                                         <p className="text-gray-600 mb-4 text-sm grow">{product.description}</p>
                                         <div className="text-xl font-bold text-gray-900 mb-4">${product.price.toFixed(2)}</div>
                                         <div className="flex items-center justify-between gap-2 mt-auto">
-                                            <button className="flex-1 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium transition-colors">
+                                            <button 
+                                                onClick={() => addToCart({ ...product, id: String(product.id), quantity: 1 })}
+                                                className="flex-1 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
+                                            >
                                                 Add to Cart
                                             </button>
                                             <Link href={`/products/${product.id}`} className="flex-1 block">

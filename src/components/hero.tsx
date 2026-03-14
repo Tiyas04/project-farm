@@ -32,9 +32,9 @@ export default function Hero() {
                 <p className="text-sm md:text-base text-gray-50 mb-8 max-w-2xl mx-auto font-medium drop-shadow-sm leading-relaxed">
                     Eco friendly products are "products that do not harm the environment whether in their production, use or disposal". In other words, these products help preserve the environment by significantly reducing the pollution they could produce.
                 </p>
-                <button className="px-6 py-3 bg-white hover:bg-gray-100 text-green-900 font-bold text-sm tracking-widest uppercase transition-colors shadow-lg">
+                <a href="/products" className="px-6 py-3 bg-white hover:bg-gray-100 text-green-900 font-bold text-sm tracking-widest uppercase transition-colors shadow-lg">
                     Explore Products
-                </button>
+                </a>
             </div>
         </section>
     );
