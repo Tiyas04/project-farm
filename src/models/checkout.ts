@@ -5,12 +5,10 @@ export interface CheckOut extends Document {
     fullName: string;
     email: string;
     phoneno: Number;
-    company?: string;
     address: string;
     city: string;
     state: string;
     pincode: string;
-    permissionproof: string
     paymentMethod: "COD";
 }
 
@@ -40,9 +38,6 @@ const CheckOutSchema = new mongoose.Schema<CheckOut>(
             required: true,
             trim: true
         },
-        company: {
-            type: String
-        },
         address: {
             type: String,
             required: true
@@ -58,11 +53,6 @@ const CheckOutSchema = new mongoose.Schema<CheckOut>(
         pincode: {
             type: String,
             required: true
-        },
-        permissionproof: {
-            type: String,
-            required: true,
-            trim: true
         },
         paymentMethod: {
             type: String,

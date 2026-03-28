@@ -14,7 +14,6 @@ export interface User extends Document {
     govtid?: string
     orders: mongoose.Schema.Types.ObjectId[]
     refreshToken?: string
-    lastLogin?: Date
     comparePassword(password: string): Promise<boolean>
     generateAccessToken(): Promise<string>
     generateRefreshToken(): Promise<string>
@@ -73,9 +72,6 @@ const UserSchema: Schema<User> = new Schema(
         }],
         refreshToken: {
             type: String
-        },
-        lastLogin: {
-            type: Date
         }
     },
     {

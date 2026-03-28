@@ -1,22 +1,55 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { useCart } from "@/context/CartContext";
-import { MOCK_PRODUCTS } from "@/lib/products";
 
 const CATEGORIES = ["All", "Fertilizers", "Pesticides", "Seeds", "Equipment"];
 
+interface Product {
+    _id: string;
+    name: string;
+    description: string;
+    price: number;
+    category: string[];
+    image?: string;
+    stockLevel: number;
+    inStock: boolean;
+}
+
 export default function ProductsPage() {
     const { addToCart } = useCart();
+    const [products, setProducts] = useState<Product[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
 
-    const filteredProducts = MOCK_PRODUCTS.filter(product => {
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const res = await fetch('/api/product');
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json.data && Array.isArray(json.data)) {
+                        setProducts(json.data);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch products:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, []);
+
+    const filteredProducts = products.filter(product => {
         const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
+        const cats = Array.isArray(product.category) ? product.category : [product.category];
+        const matchesCategory = selectedCategory === "All" || cats.includes(selectedCategory);
         return matchesSearch && matchesCategory;
     });
 
@@ -57,7 +90,14 @@ export default function ProductsPage() {
                         </div>
                     </div>
 
-                    {filteredProducts.length === 0 ? (
+                    {isLoading ? (
+                        <div className="flex justify-center items-center py-20">
+                            <svg className="animate-spin h-10 w-10 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                    ) : filteredProducts.length === 0 ? (
                         <div className="text-center py-12 bg-white rounded-lg shadow-sm">
                             <h3 className="text-xl text-gray-600">No products found for your search.</h3>
                             <button 
@@ -70,29 +110,35 @@ export default function ProductsPage() {
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             {filteredProducts.map((product) => (
-                                <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col">
-                                    <div className="h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
+                                <div key={product._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col">
+                                    <div className="h-48 bg-gray-100 flex items-center justify-center overflow-hidden relative">
                                         {product.image ? (
                                             /* eslint-disable-next-line @next/next/no-img-element */
                                             <img src={product.image} alt={product.name} className="w-full h-full object-cover object-center" />
                                         ) : (
-                                            <span className="text-green-800 font-medium tracking-wider text-sm">{product.category.toUpperCase()}</span>
+                                            <span className="text-green-800 font-medium tracking-wider text-sm">{(product.category[0] || "PRODUCT").toUpperCase()}</span>
+                                        )}
+                                        {(!product.inStock || product.stockLevel === 0) && (
+                                            <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                                                Out of Stock
+                                            </div>
                                         )}
                                     </div>
                                     <div className="p-4 flex flex-col grow">
-                                        <Link href={`/products/${product.id}`} className="hover:text-green-700 transition-colors">
+                                        <Link href={`/products/${product._id}`} className="hover:text-green-700 transition-colors">
                                             <h3 className="text-lg font-semibold text-gray-900 mb-1">{product.name}</h3>
                                         </Link>
-                                        <p className="text-gray-600 mb-4 text-sm grow">{product.description}</p>
+                                        <p className="text-gray-600 mb-4 text-sm grow line-clamp-2">{product.description}</p>
                                         <div className="text-xl font-bold text-gray-900 mb-4">${product.price.toFixed(2)}</div>
                                         <div className="flex items-center justify-between gap-2 mt-auto">
                                             <button 
-                                                onClick={() => addToCart({ ...product, id: String(product.id), quantity: 1 })}
-                                                className="flex-1 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
+                                                onClick={() => addToCart({ ...product, id: product._id, quantity: 1, image: product.image })}
+                                                disabled={!product.inStock || product.stockLevel === 0}
+                                                className={`flex-1 py-2 text-white rounded-md text-sm font-medium transition-colors ${(!product.inStock || product.stockLevel === 0) ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 cursor-pointer'}`}
                                             >
                                                 Add to Cart
                                             </button>
-                                            <Link href={`/products/${product.id}`} className="flex-1 block">
+                                            <Link href={`/products/${product._id}`} className="flex-1 block">
                                                 <button className="w-full py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-md text-sm font-medium transition-colors cursor-pointer">
                                                     Details
                                                 </button>

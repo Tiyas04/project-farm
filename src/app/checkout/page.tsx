@@ -10,15 +10,44 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
-    // Simulate network request
-    setTimeout(() => {
-      setIsProcessing(false);
-      setIsSuccess(true);
-      clearCart();
-    }, 1500);
+
+    const formData = new FormData(e.target as HTMLFormElement);
+    const firstName = formData.get('first-name') as string;
+    const lastName = formData.get('last-name') as string;
+    
+    const payload = {
+        fullName: `${firstName} ${lastName}`.trim(),
+        email: formData.get('email') as string,
+        phoneno: Number(formData.get('phoneno')),
+        address: formData.get('address') as string,
+        city: formData.get('city') as string,
+        state: formData.get('state') as string,
+        pincode: formData.get('pincode') as string,
+        paymentMethod: formData.get('payment-method') as string || 'COD'
+    };
+
+    try {
+        const res = await fetch('/api/order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            setIsSuccess(true);
+            clearCart();
+        } else {
+            const data = await res.json();
+            alert(data.message || 'Checkout failed');
+        }
+    } catch (error) {
+        alert('An error occurred during checkout');
+    } finally {
+        setIsProcessing(false);
+    }
   };
 
   if (isSuccess) {
@@ -67,10 +96,16 @@ export default function CheckoutPage() {
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">Contact Information</h2>
                 <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
-                  <div className="sm:col-span-2">
+                  <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
                     <div className="mt-1">
                       <input type="email" id="email" name="email" required className="block w-full rounded-md border-gray-300 px-4 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border" />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="phoneno" className="block text-sm font-medium text-gray-700">Phone Number</label>
+                    <div className="mt-1">
+                      <input type="tel" id="phoneno" name="phoneno" required className="block w-full rounded-md border-gray-300 px-4 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border" />
                     </div>
                   </div>
                 </div>
@@ -105,9 +140,15 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <div>
-                    <label htmlFor="postal-code" className="block text-sm font-medium text-gray-700">Postal code</label>
+                    <label htmlFor="state" className="block text-sm font-medium text-gray-700">State / Province</label>
                     <div className="mt-1">
-                      <input type="text" id="postal-code" name="postal-code" required className="block w-full rounded-md border-gray-300 px-4 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border" />
+                      <input type="text" id="state" name="state" required className="block w-full rounded-md border-gray-300 px-4 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border" />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="pincode" className="block text-sm font-medium text-gray-700">Postal Code (Pincode)</label>
+                    <div className="mt-1">
+                      <input type="text" id="pincode" name="pincode" required className="block w-full rounded-md border-gray-300 px-4 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border" />
                     </div>
                   </div>
                 </div>

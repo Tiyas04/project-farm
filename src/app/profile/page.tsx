@@ -1,53 +1,142 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-// Mock User Data
-const MOCK_USER = {
-  name: 'Jane Doe',
-  email: 'jane.doe@example.com',
-  phone: '+1 (555) 123-4567',
-  address: '123 Farm Lane, Ruralville, CA 90210',
-  memberSince: 'March 2023'
-};
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  phoneno: string;
+  createdAt?: string;
+}
 
-// Mock Order History Data
-const MOCK_ORDERS = [
-  {
-    id: 'ORD-2024-001',
-    date: 'Oct 15, 2023',
-    status: 'Delivered',
-    total: 35.98,
-    items: [
-      { name: 'Organic Fertilizer', quantity: 1, price: 25.99 },
-      { name: 'Tomato Seeds', quantity: 2, price: 4.99 }
-    ]
-  },
-  {
-    id: 'ORD-2024-002',
-    date: 'Nov 02, 2023',
-    status: 'Processing',
-    total: 104.49,
-    items: [
-      { name: 'Drip Irrigation Kit', quantity: 1, price: 89.99 },
-      { name: 'Neem Oil Pesticide', quantity: 1, price: 15.49 },
-      { name: 'Shipping', quantity: 1, price: 5.00 } // Including shipping as an item for simplicity here if we want or just let total handle it
-    ]
-  }
-];
+interface OrderItem {
+  quantity: number;
+  price: number;
+  product?: {
+    name: string;
+    price: number;
+  };
+}
+
+interface Order {
+  _id: string;
+  status: string;
+  totalamount: number;
+  createdAt: string;
+  items: OrderItem[];
+}
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'password'>('orders');
   const router = useRouter();
 
-  const handleLogout = () => {
-    // In a real app, clear auth tokens here
-    router.push('/');
+  const [user, setUser] = useState<User | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const [formData, setFormData] = useState({ name: '', email: '', phoneno: '' });
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [profileRes, ordersRes] = await Promise.all([
+          fetch('/api/profile'),
+          fetch('/api/order')
+        ]);
+        
+        if (profileRes.status === 401) {
+           router.push('/');
+           return;
+        }
+
+        if (profileRes.ok) {
+          const profileJson = await profileRes.json();
+          setUser(profileJson.data);
+          setFormData({
+            name: profileJson.data.name || '',
+            email: profileJson.data.email || '',
+            phoneno: profileJson.data.phoneno || ''
+          });
+        }
+
+        if (ordersRes.ok) {
+          const ordersJson = await ordersRes.json();
+          setOrders(ordersJson.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching profile data", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [router]);
+
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUpdating(true);
+    setUpdateMessage(null);
+    try {
+        const res = await fetch('/api/profile', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        const json = await res.json();
+        if (res.ok) {
+            setUpdateMessage({ type: 'success', text: 'Profile updated successfully!' });
+            setUser(json.data);
+        } else {
+            setUpdateMessage({ type: 'error', text: json.message || 'Failed to update profile.' });
+        }
+    } catch (err) {
+        setUpdateMessage({ type: 'error', text: 'Network error occurred.' });
+    } finally {
+        setIsUpdating(false);
+    }
   };
+
+  const handleLogout = async () => {
+    try {
+        await fetch('/api/logout', { method: 'POST' });
+        router.push('/');
+    } catch (e) {
+        router.push('/');
+    }
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "Recently";
+    return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric'
+    });
+  };
+
+  if (isLoading) {
+    return (
+        <div className="bg-gray-50 min-h-screen flex flex-col font-sans">
+            <Navbar />
+            <main className="grow flex justify-center items-center">
+                <svg className="animate-spin h-10 w-10 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </main>
+            <Footer />
+        </div>
+    );
+  }
+
+  if (!user) return null; // Redirecting handles this
+
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col font-sans">
       <Navbar />
@@ -85,15 +174,6 @@ export default function ProfilePage() {
                   Past Orders
                 </button>
                 <button 
-                  onClick={() => setActiveTab('password')}
-                  className={`flex items-center text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'password' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'}`}
-                >
-                  <svg className="mr-3 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                  </svg>
-                  Change Password
-                </button>
-                <button 
                   onClick={handleLogout}
                   className="flex items-center text-left px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors mt-4 border-t border-gray-100"
                 >
@@ -115,26 +195,22 @@ export default function ProfilePage() {
                   <div className="p-6">
                     <div className="flex items-center mb-6">
                       <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center text-green-700 text-2xl font-bold mr-4">
-                        {MOCK_USER.name.charAt(0)}
+                        {user.name ? user.name.charAt(0).toUpperCase() : '?'}
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900">{MOCK_USER.name}</h3>
-                        <p className="text-gray-500 text-sm">Member since {MOCK_USER.memberSince}</p>
+                        <h3 className="text-xl font-bold text-gray-900">{user.name}</h3>
+                        <p className="text-gray-500 text-sm">Member since {formatDate(user.createdAt)}</p>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Email</h4>
-                        <p className="text-gray-900 font-medium">{MOCK_USER.email}</p>
+                        <p className="text-gray-900 font-medium">{user.email}</p>
                       </div>
                       <div>
                         <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Phone</h4>
-                        <p className="text-gray-900 font-medium">{MOCK_USER.phone}</p>
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Shipping Address</h4>
-                        <p className="text-gray-900 font-medium">{MOCK_USER.address}</p>
+                        <p className="text-gray-900 font-medium">{user.phoneno || 'Not provided'}</p>
                       </div>
                     </div>
                   </div>
@@ -146,61 +222,53 @@ export default function ProfilePage() {
                     <h3 className="text-lg font-bold text-gray-900">Edit Profile Information</h3>
                   </div>
                   <div className="p-6">
-                    <form className="space-y-6">
+                    {updateMessage && (
+                        <div className={`mb-6 p-4 rounded-md text-sm font-medium ${updateMessage.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                            {updateMessage.text}
+                        </div>
+                    )}
+                    <form onSubmit={handleProfileUpdate} className="space-y-6">
                       <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
                         <div className="sm:col-span-2">
                           <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
-                          <input type="text" id="name" defaultValue={MOCK_USER.name} className="mt-1 block w-full rounded-md border-gray-300 px-4 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border" />
+                          <input 
+                            type="text" 
+                            id="name" 
+                            value={formData.name}
+                            onChange={e => setFormData({...formData, name: e.target.value})}
+                            required
+                            className="mt-1 block w-full rounded-md border-gray-300 px-4 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border" 
+                          />
                         </div>
                         <div>
                           <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email Address</label>
-                          <input type="email" id="email" defaultValue={MOCK_USER.email} className="mt-1 block w-full rounded-md border-gray-300 px-4 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border" />
+                          <input 
+                            type="email" 
+                            id="email" 
+                            value={formData.email}
+                            onChange={e => setFormData({...formData, email: e.target.value})}
+                            required
+                            className="mt-1 block w-full rounded-md border-gray-300 px-4 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border" 
+                          />
                         </div>
                         <div>
                           <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
-                          <input type="tel" id="phone" defaultValue={MOCK_USER.phone} className="mt-1 block w-full rounded-md border-gray-300 px-4 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border" />
-                        </div>
-                        <div className="sm:col-span-2">
-                          <label htmlFor="address" className="block text-sm font-medium text-gray-700">Shipping Address</label>
-                          <textarea id="address" rows={3} defaultValue={MOCK_USER.address} className="mt-1 block w-full rounded-md border-gray-300 px-4 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border" />
+                          <input 
+                            type="tel" 
+                            id="phone" 
+                            value={formData.phoneno}
+                            onChange={e => setFormData({...formData, phoneno: e.target.value})}
+                            className="mt-1 block w-full rounded-md border-gray-300 px-4 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border" 
+                          />
                         </div>
                       </div>
                       <div className="flex justify-end mt-6">
-                        <button type="button" className="bg-green-600 text-white hover:bg-green-700 font-medium py-2 px-6 rounded-md transition-colors shadow-sm">
-                          Save Changes
+                        <button type="submit" disabled={isUpdating} className={`text-white font-medium py-2 px-6 rounded-md transition-colors shadow-sm ${isUpdating ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}>
+                          {isUpdating ? 'Saving...' : 'Save Changes'}
                         </button>
                       </div>
                     </form>
                   </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'password' && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
-                  <h3 className="text-lg font-bold text-gray-900">Change Password</h3>
-                </div>
-                <div className="p-6">
-                  <form className="space-y-6 max-w-md">
-                    <div>
-                      <label htmlFor="current-password" className="block text-sm font-medium text-gray-700">Current Password</label>
-                      <input type="password" id="current-password" placeholder="••••••••" className="mt-1 block w-full rounded-md border-gray-300 px-4 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border" />
-                    </div>
-                    <div>
-                      <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">New Password</label>
-                      <input type="password" id="new-password" placeholder="••••••••" className="mt-1 block w-full rounded-md border-gray-300 px-4 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border" />
-                    </div>
-                    <div>
-                      <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                      <input type="password" id="confirm-password" placeholder="••••••••" className="mt-1 block w-full rounded-md border-gray-300 px-4 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border" />
-                    </div>
-                    <div className="pt-2">
-                      <button type="button" className="bg-green-600 text-white hover:bg-green-700 font-medium py-2 px-6 rounded-md transition-colors shadow-sm">
-                        Update Password
-                      </button>
-                    </div>
-                  </form>
                 </div>
               </div>
             )}
@@ -212,23 +280,24 @@ export default function ProfilePage() {
                 </div>
                 
                 <div className="divide-y divide-gray-100">
-                  {MOCK_ORDERS.length > 0 ? (
-                    MOCK_ORDERS.map((order) => (
-                      <div key={order.id} className="p-6 hover:bg-gray-50 transition-colors">
+                  {orders.length > 0 ? (
+                    orders.map((order) => (
+                      <div key={order._id} className="p-6 hover:bg-gray-50 transition-colors">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
                           <div>
-                            <p className="text-sm text-gray-500 mb-1">Order Placed: <span className="font-medium text-gray-900">{order.date}</span></p>
-                            <p className="text-sm text-gray-500">Order ID: <span className="font-medium text-gray-900">{order.id}</span></p>
+                            <p className="text-sm text-gray-500 mb-1">Order Placed: <span className="font-medium text-gray-900">{formatDate(order.createdAt)}</span></p>
+                            <p className="text-sm text-gray-500 truncate max-w-[200px] sm:max-w-xs">Order ID: <span className="font-medium inline-block text-gray-900">{order._id}</span></p>
                           </div>
-                          <div className="flex flex-col sm:items-end gap-2">
-                            <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
-                              order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                              order.status === 'Processing' ? 'bg-blue-100 text-blue-800' :
-                              'bg-gray-100 text-gray-800'
+                          <div className="flex flex-col sm:items-end gap-2 shrink-0">
+                            <span className={`inline-flex px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full ${
+                                order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                                order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                                order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'
                             }`}>
                               {order.status}
                             </span>
-                            <span className="font-bold text-gray-900">Total: ${order.total.toFixed(2)}</span>
+                            <span className="font-bold text-gray-900">Total: ${order.totalamount?.toFixed(2) || '0.00'}</span>
                           </div>
                         </div>
 
@@ -244,9 +313,9 @@ export default function ProfilePage() {
                             <tbody className="bg-white divide-y divide-gray-200">
                               {order.items.map((item, idx) => (
                                 <tr key={idx}>
-                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{item.name}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{item.product?.name || 'Deleted Product'}</td>
                                   <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">{item.quantity}</td>
-                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">${item.price.toFixed(2)}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">${(item.price || item.product?.price || 0).toFixed(2)}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -254,8 +323,8 @@ export default function ProfilePage() {
                         </div>
                         
                         <div className="mt-4 flex justify-end">
-                          <Link href={`#`} className="text-sm font-medium text-green-600 hover:text-green-500">
-                            View Invoice <span aria-hidden="true">&rarr;</span>
+                          <Link href={`#`} className="text-sm font-medium text-gray-400 hover:text-green-500 transition-colors">
+                            Need help? <span aria-hidden="true">&rarr;</span>
                           </Link>
                         </div>
                       </div>
