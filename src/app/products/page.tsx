@@ -6,8 +6,6 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { useCart } from "@/context/CartContext";
 
-const CATEGORIES = ["All", "Fertilizers", "Pesticides", "Seeds", "Equipment"];
-
 interface Product {
     _id: string;
     name: string;
@@ -48,10 +46,17 @@ export default function ProductsPage() {
         fetchProducts();
     }, []);
 
+    // Derive dynamic categories cleanly mapped to Title Case
+    const availableCategories = ["All", ...Array.from(new Set(products.flatMap(p => {
+        const cats = Array.isArray(p.category) ? p.category : [p.category];
+        return cats.map(c => (c || "").trim().toLowerCase()).filter(Boolean);
+    })))].map(cat => cat === "All" ? "All" : cat.charAt(0).toUpperCase() + cat.slice(1));
+
     const filteredProducts = products.filter(product => {
         const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
         const cats = Array.isArray(product.category) ? product.category : [product.category];
-        const matchesCategory = selectedCategory === "All" || cats.includes(selectedCategory);
+        const normalizedCats = cats.map(c => (c || "").trim().toLowerCase());
+        const matchesCategory = selectedCategory === "All" || normalizedCats.includes(selectedCategory.toLowerCase());
         return matchesSearch && matchesCategory;
     });
 
@@ -83,9 +88,9 @@ export default function ProductsPage() {
                             <select 
                                 value={selectedCategory}
                                 onChange={(e) => setSelectedCategory(e.target.value)}
-                                className="w-full sm:w-48 py-2 pl-3 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 bg-white shadow-sm cursor-pointer"
+                                className="w-full sm:w-48 py-2 pl-3 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 bg-white shadow-sm cursor-pointer capitalize"
                             >
-                                {CATEGORIES.map(category => (
+                                {availableCategories.map(category => (
                                     <option key={category} value={category}>{category}</option>
                                 ))}
                             </select>

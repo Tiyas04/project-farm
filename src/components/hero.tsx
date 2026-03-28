@@ -16,14 +16,6 @@ export default function Hero() {
             <div className="absolute inset-0 bg-black/20 z-10"></div>
             <div className="absolute inset-0 bg-linear-to-t from-green-900/40 via-transparent to-transparent z-10"></div>
 
-            {/* Left/Right Arrow Buttons (Absolute) */}
-            <button className="absolute left-4 md:left-8 z-30 w-10 h-10 items-center justify-center bg-green-900/90 hover:bg-green-800 transition-colors text-white hidden md:flex cursor-pointer" aria-label="Previous slide">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-            </button>
-            <button className="absolute right-4 md:right-8 z-30 w-10 h-10 items-center justify-center bg-green-900/90 hover:bg-green-800 transition-colors text-white hidden md:flex cursor-pointer" aria-label="Next slide">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
-
             {/* Content */}
             <div className="relative z-20 text-center px-6 max-w-4xl mx-auto flex flex-col items-center">
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-wide drop-shadow-md uppercase">
