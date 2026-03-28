@@ -39,9 +39,10 @@ export default function ProfilePage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [formData, setFormData] = useState({ name: '', email: '', phoneno: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phoneno: '', password: '' });
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateMessage, setUpdateMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,7 +63,8 @@ export default function ProfilePage() {
           setFormData({
             name: profileJson.data.name || '',
             email: profileJson.data.email || '',
-            phoneno: profileJson.data.phoneno || ''
+            phoneno: profileJson.data.phoneno || '',
+            password: ''
           });
         }
 
@@ -260,6 +262,36 @@ export default function ProfilePage() {
                             onChange={e => setFormData({...formData, phoneno: e.target.value})}
                             className="mt-1 block w-full rounded-md border-gray-300 px-4 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border" 
                           />
+                        </div>
+                        <div className="sm:col-span-2 mt-4">
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">New Password <span className="text-gray-400 font-normal text-xs">(leave blank to keep current password)</span></label>
+                            <div className="relative mt-1">
+                              <input
+                                type={showPassword ? 'text' : 'password'}
+                                id="password"
+                                value={formData.password}
+                                onChange={e => setFormData({...formData, password: e.target.value})}
+                                disabled={isUpdating}
+                                className="block w-full rounded-md border-gray-300 pl-4 pr-12 py-3 shadow-sm focus:border-green-500 focus:ring-green-500 border transition-all"
+                                placeholder="Enter a new password..."
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-green-600 focus:outline-none"
+                              >
+                                {showPassword ? (
+                                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                  </svg>
+                                ) : (
+                                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.29 3.29m0 0l1.414 1.414M3 3l18 18" />
+                                  </svg>
+                                )}
+                              </button>
+                            </div>
                         </div>
                       </div>
                       <div className="flex justify-end mt-6">

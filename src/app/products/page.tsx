@@ -17,6 +17,8 @@ interface Product {
     image?: string;
     stockLevel: number;
     inStock: boolean;
+    unit?: string;
+    fssaino?: string;
 }
 
 export default function ProductsPage() {
@@ -129,7 +131,7 @@ export default function ProductsPage() {
                                             <h3 className="text-lg font-semibold text-gray-900 mb-1">{product.name}</h3>
                                         </Link>
                                         <p className="text-gray-600 mb-4 text-sm grow line-clamp-2">{product.description}</p>
-                                        <div className="text-xl font-bold text-gray-900 mb-4">${product.price.toFixed(2)}</div>
+                                        <div className="text-xl font-bold text-gray-900 mb-4">${product.price.toFixed(2)} <span className="text-sm font-medium text-gray-500">/ {product.unit || 'item'}</span></div>
                                         <div className="flex items-center justify-between gap-2 mt-auto">
                                             <button 
                                                 onClick={() => addToCart({ ...product, id: product._id, quantity: 1, image: product.image })}

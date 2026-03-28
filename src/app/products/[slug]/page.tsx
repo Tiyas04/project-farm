@@ -17,6 +17,8 @@ interface Product {
     image?: string;
     stockLevel: number;
     inStock: boolean;
+    unit?: string;
+    fssaino?: string;
 }
 
 export default function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -124,7 +126,17 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                         <div className="p-8 md:p-12 flex flex-col justify-center">
                             <span className="text-green-700 font-semibold tracking-wider text-sm mb-2">{primaryCategory.toUpperCase()}</span>
                             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{product.name}</h1>
-                            <p className="text-2xl font-black text-gray-900 mb-6">${product.price.toFixed(2)}</p>
+                            
+                            {product.fssaino && (
+                                <div className="inline-block bg-gray-100 px-3 py-1 rounded text-xs font-bold text-gray-600 tracking-wider mb-4 border border-gray-200">
+                                    FSSAI NO: {product.fssaino}
+                                </div>
+                            )}
+
+                            <p className="text-2xl font-black text-gray-900 mb-6">
+                                ${product.price.toFixed(2)} 
+                                <span className="text-lg font-medium text-gray-500 ml-1">/ {product.unit || 'item'}</span>
+                            </p>
                             
                             <p className="text-gray-600 mb-8 leading-relaxed whitespace-pre-wrap">
                                 {product.longDescription || product.description}
@@ -169,9 +181,11 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                                             className="px-3 py-2 text-gray-600 hover:bg-gray-200 transition-colors disabled:opacity-50"
                                         >+</button>
                                     </div>
-                                    {product.stockLevel > 0 && product.stockLevel <= 5 && (
+                                    {product.stockLevel > 0 && product.stockLevel <= 5 ? (
                                         <p className="text-orange-500 text-xs mt-1 font-medium">Only {product.stockLevel} left!</p>
-                                    )}
+                                    ) : product.stockLevel > 5 ? (
+                                        <p className="text-green-600 text-xs mt-1 font-medium">{product.stockLevel} currently in stock</p>
+                                    ) : null}
                                 </div>
                                 <button 
                                     disabled={!product.inStock || product.stockLevel === 0}

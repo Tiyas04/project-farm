@@ -121,11 +121,11 @@ export async function PATCH(req: NextRequest){
 
         const { name, email, password, phoneno } = body
 
-        if(!name || !email || !password || !phoneno){
+        if(!name || !email || !phoneno){
             return NextResponse.json(
                 {
                     success: false,
-                    message: "All fields are required"
+                    message: "Name, email, and phone number are required"
                 },
                 {
                     status: 400
@@ -133,7 +133,15 @@ export async function PATCH(req: NextRequest){
             )
         }
 
-        const updatedUser = await UserModel.findByIdAndUpdate(user.id, body, { new: true })
+        user.name = name;
+        user.email = email;
+        user.phoneno = phoneno;
+
+        if (password && password.trim() !== '') {
+            user.password = password; // This will correctly trigger the pre-save hash hook
+        }
+
+        const updatedUser = await user.save();
 
         if(!updatedUser){
             return NextResponse.json(
