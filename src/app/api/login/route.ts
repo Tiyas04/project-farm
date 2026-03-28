@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
 
         const { email, password, phoneno } = body
 
-        if (!(email && phoneno) || !password) {
+        if (!(email || phoneno) || !password) {
             return NextResponse.json(
                 {
                     success: false,
