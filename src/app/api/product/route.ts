@@ -2,13 +2,28 @@ import ProductModel from "@/models/product";
 import dbConnect from "@/lib/dbconnect";
 import { NextRequest, NextResponse } from "next/server";
 import streamUpload from "@/lib/uploadoncloudinary";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 export async function POST(req: NextRequest) {
     await dbConnect()
 
     try {
-        const contentType = req.headers.get("content-type") || "";
-        const sellerId = req.headers.get("userid");
+        const contentType = req.headers.get("content-type") || ""
+        let sellerId = req.headers.get("userid");
+
+        // If no userid header, try to get from refreshToken cookie
+        if (!sellerId) {
+            const refreshToken = req.cookies.get("refreshToken")?.value;
+            if (refreshToken) {
+                try {
+                    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!) as JwtPayload;
+                    sellerId = decoded.id;
+                } catch (e) {
+                    console.log("Token verification failed in product POST:", e);
+                }
+            }
+        }
+
         let productsData: any[] = [];
         let isArray = false;
 
@@ -53,7 +68,7 @@ export async function POST(req: NextRequest) {
                     fssaino: formData.getAll("fssaino")[i] as string,
                     unit: (formData.getAll("unit")[i] as string) || "mg",
                     image: imageUrl || undefined,
-                    seller: sellerId || undefined
+                    seller: sellerId
                 });
             }
         } else {
@@ -81,7 +96,7 @@ export async function POST(req: NextRequest) {
                     product.category = product.category.split(',').map((c: string) => c.trim()).filter((c: string) => c);
                 }
 
-                product.seller = sellerId || product.seller;
+                product.seller = sellerId;
 
                 let imgToUpload = product.image;
                 if (!imgToUpload && product.images && Array.isArray(product.images) && product.images.length > 0) {

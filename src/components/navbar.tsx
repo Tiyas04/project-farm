@@ -11,15 +11,19 @@ export default function Navbar() {
     const [authView, setAuthView] = useState<'login' | 'signup'>('login');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userRole, setUserRole] = useState<string | null>(null);
 
     useEffect(() => {
         const checkAuth = async () => {
             try {
                 const res = await fetch('/api/profile');
                 if (res.ok) {
+                    const json = await res.json();
                     setIsLoggedIn(true);
+                    setUserRole(json.data?.role || null);
                 } else {
                     setIsLoggedIn(false);
+                    setUserRole(null);
                 }
             } catch (e) {
                 console.error("Auth check failed", e);
@@ -83,6 +87,12 @@ export default function Navbar() {
                         <Link href="/contact" className="text-gray-700 hover:text-green-600 hover:bg-green-50 px-3 py-2 rounded-md text-sm font-medium transition-colors">Contact Us</Link>
                         {isLoggedIn && (
                             <Link href="/profile" className="text-gray-700 hover:text-green-600 hover:bg-green-50 px-3 py-2 rounded-md text-sm font-medium transition-colors">Profile</Link>
+                        )}
+                        {userRole === 'seller' && (
+                            <Link href="/seller/dashboard" className="text-gray-700 hover:text-green-600 hover:bg-green-50 px-3 py-2 rounded-md text-sm font-medium transition-colors">Seller Dashboard</Link>
+                        )}
+                        {userRole === 'admin' && (
+                            <Link href="/admin/dashboard" className="text-gray-700 hover:text-green-600 hover:bg-green-50 px-3 py-2 rounded-md text-sm font-medium transition-colors">Admin Dashboard</Link>
                         )}
                     </div>
 
@@ -177,10 +187,24 @@ export default function Navbar() {
                 </Link>
 
                 {isLoggedIn && (
-                    <Link href="/profile" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center text-gray-700 hover:text-green-600 group transition-colors mt-8 pt-8 border-t border-gray-100">
-                        <svg className="w-6 h-6 mr-4 text-gray-400 group-hover:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zm-4 7a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                        <span className="text-lg font-medium">My Profile</span>
-                    </Link>
+                    <>
+                        <Link href="/profile" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center text-gray-700 hover:text-green-600 group transition-colors mt-8 pt-8 border-t border-gray-100">
+                            <svg className="w-6 h-6 mr-4 text-gray-400 group-hover:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zm-4 7a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            <span className="text-lg font-medium">My Profile</span>
+                        </Link>
+                        {userRole === 'seller' && (
+                            <Link href="/seller/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center text-gray-700 hover:text-green-600 group transition-colors mt-6 pt-0">
+                                <svg className="w-6 h-6 mr-4 text-gray-400 group-hover:text-green-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                                <span className="text-lg font-medium">Seller Dashboard</span>
+                            </Link>
+                        )}
+                        {userRole === 'admin' && (
+                            <Link href="/admin/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center text-gray-700 hover:text-green-600 group transition-colors mt-6 pt-0">
+                                <svg className="w-6 h-6 mr-4 text-gray-400 group-hover:text-green-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                <span className="text-lg font-medium">Admin Dashboard</span>
+                            </Link>
+                        )}
+                    </>
                 )}
             </div>
 

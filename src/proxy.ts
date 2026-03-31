@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function proxy(req: NextRequest) {
     //Admin access
-    if (req.nextUrl.pathname.startsWith("/admin") && req.headers.get("role") !== "admin") {
+    const role = req.headers.get("role");
+    
+    if (req.nextUrl.pathname.startsWith("/admin") && (role === "seller" || role === "user")) {
         return NextResponse.json(
             {
                 success: false,
@@ -15,7 +17,7 @@ export async function proxy(req: NextRequest) {
     }
 
     //Seller access
-    if (req.nextUrl.pathname.startsWith("/seller") && req.headers.get("role") === "user") {
+    if (req.nextUrl.pathname.startsWith("/seller") && role === "user") {
         return NextResponse.json(
             {
                 success: false,
@@ -26,6 +28,8 @@ export async function proxy(req: NextRequest) {
             }
         )
     }
+
+
 }
 
 export const config = {

@@ -9,9 +9,10 @@ export interface User extends Document {
     phoneno: string
     role: string
     fssaino?: string
-    fssaiicense?: string
+    fssailicense?: string
     kishancreditcard?: string
     govtid?: string
+    sellerstatus?: string
     orders: mongoose.Schema.Types.ObjectId[]
     refreshToken?: string
     comparePassword(password: string): Promise<boolean>
@@ -54,7 +55,7 @@ const UserSchema: Schema<User> = new Schema(
             type: String,
             trim: true
         },
-        fssaiicense: {
+        fssailicense: {
             type: String,
             trim: true
         },
@@ -65,6 +66,11 @@ const UserSchema: Schema<User> = new Schema(
         govtid: {
             type: String,
             trim: true
+        },
+        sellerstatus:{
+            type: String,
+            enum: ["notapplied", "pending", "approved", "rejected"],
+            default: "notapplied"
         },
         orders: [{
             type: Schema.Types.ObjectId,

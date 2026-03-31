@@ -115,6 +115,24 @@ export default function ProfilePage() {
     }
   };
 
+  const handleCancelOrder = async (orderId: string) => {
+    if (!confirm('Are you sure you want to cancel this order?')) return;
+    try {
+        const res = await fetch(`/api/order/${orderId}/cancel`, {
+            method: 'PATCH'
+        });
+        const data = await res.json();
+        if (res.ok) {
+            setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: 'cancelled' } : o));
+            alert('Order cancelled successfully.');
+        } else {
+            alert(data.message || 'Failed to cancel order.');
+        }
+    } catch(e) {
+        alert('An error occurred while cancelling the order.');
+    }
+  };
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return "Recently";
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -354,7 +372,15 @@ export default function ProfilePage() {
                           </table>
                         </div>
                         
-                        <div className="mt-4 flex justify-end">
+                        <div className="mt-4 flex justify-end gap-4 items-center">
+                          {order.status !== 'delivered' && order.status !== 'cancelled' && (
+                            <button 
+                              onClick={() => handleCancelOrder(order._id)}
+                              className="text-sm font-medium text-red-500 hover:text-red-700 transition-colors border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-md"
+                            >
+                              Cancel Order
+                            </button>
+                          )}
                           <Link href={`#`} className="text-sm font-medium text-gray-400 hover:text-green-500 transition-colors">
                             Need help? <span aria-hidden="true">&rarr;</span>
                           </Link>
