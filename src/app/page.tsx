@@ -66,7 +66,7 @@ export default function Home() {
                                 <h3 className="text-lg font-semibold text-gray-900 mb-1">{product.name}</h3>
                             </Link>
                             <p className="text-gray-600 mb-4 text-sm grow">{product.description}</p>
-                            <div className="text-xl font-bold text-gray-900 mb-4">${product.price.toFixed(2)} <span className="text-sm font-medium text-gray-500">/ {product.unit || 'item'}</span></div>
+                            <div className="text-xl font-bold text-gray-900 mb-4">₹{product.price.toFixed(2)} <span className="text-sm font-medium text-gray-500">/ {product.unit || 'item'}</span></div>
                             <div className="flex items-center justify-between gap-2 mt-auto">
                                 <button 
                                     onClick={() => addToCart({ ...product, id: String(product._id), quantity: 1 })}

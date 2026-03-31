@@ -347,7 +347,7 @@ export default function ProfilePage() {
                             }`}>
                               {order.status}
                             </span>
-                            <span className="font-bold text-gray-900">Total: ${order.totalamount?.toFixed(2) || '0.00'}</span>
+                            <span className="font-bold text-gray-900">Total: ₹{order.totalamount?.toFixed(2) || '0.00'}</span>
                           </div>
                         </div>
 

@@ -134,7 +134,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                             )}
 
                             <p className="text-2xl font-black text-gray-900 mb-6">
-                                ${product.price.toFixed(2)} 
+                                ₹{product.price.toFixed(2)} 
                                 <span className="text-lg font-medium text-gray-500 ml-1">/ {product.unit || 'item'}</span>
                             </p>
                             
@@ -168,11 +168,12 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                                         <input 
                                             type="number" 
                                             id="quantity" 
-                                            min="1" 
+                                            step="any"
+                                            min="0" 
                                             max={product.stockLevel || 99}
                                             disabled={!product.inStock || product.stockLevel === 0}
                                             value={(!product.inStock || product.stockLevel === 0) ? 0 : quantity}
-                                            onChange={(e) => setQuantity(Math.min(product.stockLevel || 99, Math.max(1, parseInt(e.target.value) || 1)))}
+                                            onChange={(e) => setQuantity(Math.min(product.stockLevel || 99, Math.max(0, parseFloat(e.target.value) || 0)))}
                                             className="w-full text-center text-gray-500 py-2 focus:outline-none focus:ring-1 focus:ring-green-500 disabled:bg-gray-50"
                                         />
                                         <button 

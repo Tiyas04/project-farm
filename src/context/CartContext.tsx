@@ -126,10 +126,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateQuantity = async (id: string, quantity: number) => {
-    if (quantity < 1) return;
+    if (quantity <= 0) return;
     
     // Optistic UI update for quantity since it's commonly clicked rapidly
-    setCartItems(prevItems => prevItems.map(item => item.id === id ? { ...item, quantity } : item));
+    setCartItems(prevItems => prevItems.map(item => item.id === id ? { ...item, quantity: Number(quantity.toFixed(2)) } : item));
 
     try {
       const res = await fetch(`/api/cart/${id}`, {

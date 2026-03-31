@@ -63,7 +63,7 @@ export default function CartPage() {
                           </Link>
                           <p className="mt-1 text-sm text-gray-500">Fresh from farm</p>
                         </div>
-                        <p className="text-lg font-bold text-gray-900 mt-2 sm:mt-0">${item.price.toFixed(2)}</p>
+                        <p className="text-lg font-bold text-gray-900 mt-2 sm:mt-0">₹{item.price.toFixed(2)}</p>
                       </div>
 
                       <div className="mt-4 flex flex-1 items-end justify-between">
@@ -75,9 +75,14 @@ export default function CartPage() {
                           >
                             &minus;
                           </button>
-                          <span className="px-4 text-sm font-medium text-gray-900 min-w-[2rem] text-center">
-                            {item.quantity}
-                          </span>
+                          <input 
+                            type="number"
+                            step="any"
+                            min="0.01"
+                            value={item.quantity}
+                            onChange={(e) => updateQuantity(item.id, parseFloat(e.target.value) || 0)}
+                            className="w-16 bg-transparent text-center text-sm font-medium text-gray-900 focus:outline-none"
+                          />
                           <button
                             type="button"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
@@ -113,17 +118,17 @@ export default function CartPage() {
                 <dl className="space-y-4 text-sm text-gray-600">
                   <div className="flex justify-between">
                     <dt>Subtotal</dt>
-                    <dd className="font-medium text-gray-900">${cartTotal.toFixed(2)}</dd>
+                    <dd className="font-medium text-gray-900">₹{cartTotal.toFixed(2)}</dd>
                   </div>
                   <div className="flex justify-between border-t border-gray-200 pt-4">
                     <dt className="flex items-center text-gray-600">
                       <span>Shipping estimate</span>
                     </dt>
-                    <dd className="font-medium text-gray-900">${shipping.toFixed(2)}</dd>
+                    <dd className="font-medium text-gray-900">₹{shipping.toFixed(2)}</dd>
                   </div>
                   <div className="flex justify-between border-t border-gray-200 pt-4">
                     <dt className="text-base font-bold text-gray-900">Order total</dt>
-                    <dd className="text-base font-bold text-gray-900">${total.toFixed(2)}</dd>
+                    <dd className="text-base font-bold text-gray-900">₹{total.toFixed(2)}</dd>
                   </div>
                 </dl>
 

@@ -204,7 +204,7 @@ export default function CheckoutPage() {
                       <span className="font-medium text-gray-900">{item.name}</span>
                       <span className="ml-2 text-gray-500 text-xs">x {item.quantity}</span>
                     </div>
-                    <span className="text-gray-900">${(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</span>
                   </li>
                 ))}
               </ul>
@@ -212,15 +212,15 @@ export default function CheckoutPage() {
               <dl className="space-y-4 text-sm text-gray-600">
                 <div className="flex justify-between">
                   <dt>Subtotal</dt>
-                  <dd className="font-medium text-gray-900">${cartTotal.toFixed(2)}</dd>
+                  <dd className="font-medium text-gray-900">₹{cartTotal.toFixed(2)}</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt>Shipping</dt>
-                  <dd className="font-medium text-gray-900">$5.00</dd>
+                  <dd className="font-medium text-gray-900">₹5.00</dd>
                 </div>
                 <div className="flex justify-between border-t border-gray-200 pt-4">
                   <dt className="text-base font-bold text-gray-900">Total to pay</dt>
-                  <dd className="text-base font-bold text-gray-900 text-green-600">${(cartTotal + (cartItems.length > 0 ? 5 : 0)).toFixed(2)}</dd>
+                  <dd className="text-base font-bold text-gray-900 text-green-600">₹{(cartTotal + (cartItems.length > 0 ? 5 : 0)).toFixed(2)}</dd>
                 </div>
               </dl>
             </div>
